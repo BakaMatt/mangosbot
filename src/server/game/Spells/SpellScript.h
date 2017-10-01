@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,27 +18,34 @@
 #ifndef __SPELL_SCRIPT_H
 #define __SPELL_SCRIPT_H
 
-#include "Util.h"
+#include "ObjectGuid.h"
 #include "SharedDefines.h"
 #include "SpellAuraDefines.h"
-#include "Spell.h"
-#include "ScriptReloadMgr.h"
+#include "Util.h"
+#include <memory>
 #include <stack>
 
-class Unit;
+class Aura;
+class AuraApplication;
+class AuraEffect;
+class Creature;
+class DamageInfo;
+class DispelInfo;
+class DynamicObject;
+class GameObject;
+class Item;
+class ModuleReference;
+class Player;
+class ProcEventInfo;
+class Spell;
 class SpellInfo;
 class SpellScript;
-class Spell;
-class Aura;
-class AuraEffect;
-struct SpellModifier;
-class Creature;
-class GameObject;
-class DynamicObject;
-class Player;
-class Item;
+class Unit;
 class WorldLocation;
 class WorldObject;
+struct SpellDestination;
+struct SpellModifier;
+struct SpellValue;
 
 #define SPELL_EFFECT_ANY (uint16)-1
 #define SPELL_AURA_ANY (uint16)-1
@@ -61,11 +68,11 @@ class TC_GAME_API _SpellScript
         virtual bool _Validate(SpellInfo const* entry);
 
     public:
-        _SpellScript() : m_currentScriptState(SPELL_SCRIPT_STATE_NONE), m_scriptName(NULL), m_scriptSpellId(0) {}
+        _SpellScript() : m_currentScriptState(SPELL_SCRIPT_STATE_NONE), m_scriptName(nullptr), m_scriptSpellId(0) {}
         virtual ~_SpellScript() { }
-        virtual void _Register();
-        virtual void _Unload();
-        virtual void _Init(std::string const* scriptname, uint32 spellId);
+        void _Register();
+        void _Unload();
+        void _Init(std::string const* scriptname, uint32 spellId);
         std::string const* _GetScriptName() const;
 
     protected:
@@ -132,6 +139,20 @@ class TC_GAME_API _SpellScript
         // Function called when script is destroyed
         // use for: deallocating memory allocated by script
         virtual void Unload() { }
+        // Helpers
+        static bool ValidateSpellInfo(std::initializer_list<uint32> spellIds)
+        {
+            return _ValidateSpellInfo(spellIds.begin(), spellIds.end());
+        }
+
+        template <class T>
+        static bool ValidateSpellInfo(T const& spellIds)
+        {
+            return _ValidateSpellInfo(std::begin(spellIds), std::end(spellIds));
+        }
+
+    private:
+        static bool _ValidateSpellInfo(uint32 const* begin, uint32 const* end);
 };
 
 // SpellScript interface - enum used for runtime checks of script function calls
@@ -441,7 +462,7 @@ class TC_GAME_API SpellScript : public _SpellScript
         SpellInfo const* GetTriggeringSpell();
 
         // finishes spellcast prematurely with selected error message
-        void FinishCast(SpellCastResult result);
+        void FinishCast(SpellCastResult result, uint32* param1 = nullptr, uint32* param2 = nullptr);
 
         void SetCustomCastResultMessage(SpellCustomErrors result);
 };
@@ -655,11 +676,11 @@ class TC_GAME_API AuraScript : public _SpellScript
         #define PrepareAuraScript(CLASSNAME) AURASCRIPT_FUNCTION_TYPE_DEFINES(CLASSNAME) AURASCRIPT_FUNCTION_CAST_DEFINES(CLASSNAME)
 
     public:
-        AuraScript() : _SpellScript(), m_aura(NULL), m_auraApplication(NULL), m_defaultActionPrevented(false)
+        AuraScript() : _SpellScript(), m_aura(nullptr), m_auraApplication(nullptr), m_defaultActionPrevented(false)
         { }
         bool _Validate(SpellInfo const* entry) override;
         bool _Load(Aura* aura);
-        void _PrepareScriptCall(AuraScriptHookType hookType, AuraApplication const* aurApp = NULL);
+        void _PrepareScriptCall(AuraScriptHookType hookType, AuraApplication const* aurApp = nullptr);
         void _FinishScriptCall();
         bool _IsDefaultActionPrevented();
     private:

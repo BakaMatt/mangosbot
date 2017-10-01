@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -24,9 +24,13 @@ SDCategory: Tempest Keep, The Eye
 EndScriptData */
 
 #include "ScriptMgr.h"
+#include "InstanceScript.h"
+#include "MotionMaster.h"
+#include "ObjectAccessor.h"
 #include "ScriptedCreature.h"
-#include "the_eye.h"
 #include "SpellInfo.h"
+#include "TemporarySummon.h"
+#include "the_eye.h"
 
 enum Spells
 {
@@ -185,13 +189,13 @@ class boss_alar : public CreatureScript
                 }
             }
 
-            void SpellHit(Unit*, const SpellInfo* spell) override
+            void SpellHit(Unit*, SpellInfo const* spell) override
             {
                 if (spell->Id == SPELL_DIVE_BOMB_VISUAL)
                 {
                     me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
                     me->SetDisplayId(11686);
-                    //me->SendUpdateObjectToAllExcept(NULL);
+                    //me->SendUpdateObjectToAllExcept(nullptr);
                 }
             }
 
@@ -207,7 +211,7 @@ class boss_alar : public CreatureScript
 
             void UpdateAI(uint32 diff) override
             {
-                if (!me->IsInCombat()) // sometimes IsInCombat but !incombat, faction bug?
+                if (!me->IsEngaged())
                     return;
 
                 if (Berserk_Timer <= diff)
@@ -254,12 +258,12 @@ class boss_alar : public CreatureScript
                                 return;
                             case WE_DIE:
                                 ForceMove = false;
-                                me->SetUInt32Value(UNIT_FIELD_BYTES_1, UNIT_STAND_STATE_DEAD);
+                                me->SetStandState(UNIT_STAND_STATE_DEAD);
                                 WaitTimer = 5000;
                                 WaitEvent = WE_REVIVE;
                                 return;
                             case WE_REVIVE:
-                                me->SetUInt32Value(UNIT_FIELD_BYTES_1, UNIT_STAND_STATE_STAND);
+                                me->SetStandState(UNIT_STAND_STATE_STAND);
                                 me->SetFullHealth();
                                 me->SetSpeedRate(MOVE_RUN, DefaultMoveSpeedRate);
                                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -286,7 +290,7 @@ class boss_alar : public CreatureScript
                                     if (me->IsWithinDist3d(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 5.0f))
                                         dist = 5.0f;
                                     WaitTimer = 1000 + uint32(floor(dist / 80 * 1000.0f));
-                                    me->SetPosition(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f);
+                                    me->UpdatePosition(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f);
                                     me->StopMoving();
                                     WaitEvent = WE_LAND;
                                     return;
@@ -324,7 +328,7 @@ class boss_alar : public CreatureScript
 
                 if (Phase1)
                 {
-                    if (me->getThreatManager().getThreatList().empty())
+                    if (!me->IsThreatened())
                     {
                         EnterEvadeMode();
                         return;
@@ -407,7 +411,7 @@ class boss_alar : public CreatureScript
                                 Summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                                 Summoned->SetObjectScale(Summoned->GetObjectScale() * 2.5f);
                                 Summoned->SetDisplayId(11686);
-                                Summoned->setFaction(me->getFaction());
+                                Summoned->SetFaction(me->GetFaction());
                                 Summoned->SetLevel(me->getLevel());
                                 Summoned->CastSpell(Summoned, SPELL_FLAME_PATCH, false);
                             }
@@ -432,7 +436,7 @@ class boss_alar : public CreatureScript
                     }
                     else
                     {
-                        Unit* target = NULL;
+                        Unit* target = nullptr;
                         target = me->SelectNearestTargetInAttackDistance(5);
                         if (target)
                             AttackStart(target);
@@ -448,7 +452,7 @@ class boss_alar : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const override
         {
-            return GetInstanceAI<boss_alarAI>(creature);
+            return GetTheEyeAI<boss_alarAI>(creature);
         }
 };
 
@@ -520,7 +524,7 @@ class npc_ember_of_alar : public CreatureScript
 
                 if (toDie)
                 {
-                    me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                     //me->SetVisibility(VISIBILITY_OFF);
                 }
 
@@ -531,7 +535,7 @@ class npc_ember_of_alar : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const override
         {
-            return GetInstanceAI<npc_ember_of_alarAI>(creature);
+            return GetTheEyeAI<npc_ember_of_alarAI>(creature);
         }
 };
 
@@ -553,7 +557,7 @@ class npc_flame_patch_alar : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const override
         {
-            return new npc_flame_patch_alarAI(creature);
+            return GetTheEyeAI<npc_flame_patch_alarAI>(creature);
         }
 };
 

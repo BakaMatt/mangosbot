@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://www.mangosproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,6 +22,7 @@
 #include "Define.h"
 #include "Creature.h"
 #include "GameObject.h"
+#include "SpawnData.h"
 #include "QuestDef.h"
 
 struct PoolTemplateData
@@ -118,6 +119,7 @@ class TC_GAME_API PoolMgr
 
         template<typename T>
         uint32 IsPartOfAPool(uint32 db_guid_or_pool_id) const;
+        uint32 IsPartOfAPool(SpawnObjectType type, ObjectGuid::LowType spawnId) const;
 
         template<typename T>
         bool IsSpawnedObject(uint32 db_guid_or_pool_id) const { return mSpawnedData.IsActiveObject<T>(db_guid_or_pool_id); }

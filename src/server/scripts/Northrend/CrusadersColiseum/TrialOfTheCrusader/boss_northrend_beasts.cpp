@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -17,12 +17,17 @@
  */
 
 #include "ScriptMgr.h"
+#include "InstanceScript.h"
+#include "Map.h"
+#include "MotionMaster.h"
+#include "ObjectAccessor.h"
+#include "Player.h"
 #include "ScriptedCreature.h"
+#include "SpellAuraEffects.h"
+#include "SpellScript.h"
+#include "TemporarySummon.h"
 #include "trial_of_the_crusader.h"
 #include "Vehicle.h"
-#include "Player.h"
-#include "SpellScript.h"
-#include "SpellAuraEffects.h"
 
 enum Yells
 {
@@ -200,7 +205,8 @@ class boss_gormok : public CreatureScript
                 {
                     case 0:
                         instance->DoUseDoorOrButton(instance->GetGuidData(GO_MAIN_GATE_DOOR));
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC);
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                        me->SetImmuneToPC(false);
                         me->SetReactState(REACT_AGGRESSIVE);
                         me->SetInCombatWithZone();
                         break;
@@ -290,7 +296,7 @@ class boss_gormok : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const override
         {
-            return GetInstanceAI<boss_gormokAI>(creature);
+            return GetTrialOfTheCrusaderAI<boss_gormokAI>(creature);
         }
 };
 
@@ -417,8 +423,9 @@ class npc_snobold_vassal : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_FIRE_BOMB:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, -me->GetVehicleBase()->GetCombatReach(), true))
-                                me->CastSpell(target, SPELL_FIRE_BOMB);
+                            if (me->GetVehicleBase())
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, -me->GetVehicleBase()->GetCombatReach(), true))
+                                    me->CastSpell(target, SPELL_FIRE_BOMB);
                             _events.Repeat(Seconds(20));
                             break;
                         case EVENT_HEAD_CRACK:
@@ -462,7 +469,7 @@ class npc_snobold_vassal : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const override
         {
-            return GetInstanceAI<npc_snobold_vassalAI>(creature);
+            return GetTrialOfTheCrusaderAI<npc_snobold_vassalAI>(creature);
         }
 };
 
@@ -498,7 +505,7 @@ class npc_firebomb : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const override
         {
-            return GetInstanceAI<npc_firebombAI>(creature);
+            return GetTrialOfTheCrusaderAI<npc_firebombAI>(creature);
         }
 };
 
@@ -608,7 +615,8 @@ struct boss_jormungarAI : public BossAI
                 case EVENT_SUMMON_ACIDMAW:
                     if (Creature* acidmaw = me->SummonCreature(NPC_ACIDMAW, ToCCommonLoc[9].GetPositionX(), ToCCommonLoc[9].GetPositionY(), ToCCommonLoc[9].GetPositionZ(), 5, TEMPSUMMON_MANUAL_DESPAWN))
                     {
-                        acidmaw->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC);
+                        acidmaw->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                        acidmaw->SetImmuneToPC(false);
                         acidmaw->SetReactState(REACT_AGGRESSIVE);
                         acidmaw->SetInCombatWithZone();
                         acidmaw->CastSpell(acidmaw, SPELL_EMERGE);
@@ -726,7 +734,7 @@ class boss_acidmaw : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const override
         {
-            return GetInstanceAI<boss_acidmawAI>(creature);
+            return GetTrialOfTheCrusaderAI<boss_acidmawAI>(creature);
         }
 };
 
@@ -765,7 +773,8 @@ class boss_dreadscale : public CreatureScript
                 {
                     case 0:
                         instance->DoCloseDoorOrButton(instance->GetGuidData(GO_MAIN_GATE_DOOR));
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC);
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                        me->SetImmuneToPC(false);
                         me->SetReactState(REACT_AGGRESSIVE);
                         me->SetInCombatWithZone();
                         break;
@@ -790,7 +799,7 @@ class boss_dreadscale : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const override
         {
-            return GetInstanceAI<boss_dreadscaleAI>(creature);
+            return GetTrialOfTheCrusaderAI<boss_dreadscaleAI>(creature);
         }
 };
 
@@ -837,7 +846,7 @@ class npc_slime_pool : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const override
         {
-            return GetInstanceAI<npc_slime_poolAI>(creature);
+            return GetTrialOfTheCrusaderAI<npc_slime_poolAI>(creature);
         }
 };
 
@@ -852,7 +861,7 @@ class spell_gormok_fire_bomb : public SpellScriptLoader
 
             void TriggerFireBomb(SpellEffIndex /*effIndex*/)
             {
-                if (const WorldLocation* pos = GetExplTargetDest())
+                if (WorldLocation const* pos = GetExplTargetDest())
                 {
                     if (Unit* caster = GetCaster())
                         caster->SummonCreature(NPC_FIRE_BOMB, pos->GetPositionX(), pos->GetPositionY(), pos->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 30*IN_MILLISECONDS);
@@ -938,7 +947,8 @@ class boss_icehowl : public CreatureScript
                         break;
                     case 2:
                         instance->DoUseDoorOrButton(instance->GetGuidData(GO_MAIN_GATE_DOOR));
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC);
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                        me->SetImmuneToPC(false);
                         me->SetReactState(REACT_AGGRESSIVE);
                         me->SetInCombatWithZone();
                         break;
@@ -1101,7 +1111,7 @@ class boss_icehowl : public CreatureScript
                         }
                         if (events.ExecuteEvent() == EVENT_TRAMPLE)
                         {
-                            Map::PlayerList const &lPlayers = me->GetMap()->GetPlayers();
+                            Map::PlayerList const& lPlayers = me->GetMap()->GetPlayers();
                             for (Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
                             {
                                 if (Unit* player = itr->GetSource())
@@ -1154,7 +1164,7 @@ class boss_icehowl : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const override
         {
-            return GetInstanceAI<boss_icehowlAI>(creature);
+            return GetTrialOfTheCrusaderAI<boss_icehowlAI>(creature);
         }
 };
 
@@ -1169,9 +1179,7 @@ public:
 
         bool Validate(SpellInfo const* /*spell*/) override
         {
-            if (!sSpellMgr->GetSpellInfo(SPELL_RIDE_PLAYER))
-                return false;
-            return true;
+            return ValidateSpellInfo({ SPELL_RIDE_PLAYER });
         }
 
         bool Load() override
@@ -1267,9 +1275,7 @@ public:
 
         bool Validate(SpellInfo const* /*spell*/) override
         {
-            if (!sSpellMgr->GetSpellInfo(SPELL_RIDE_PLAYER))
-                return false;
-            return true;
+            return ValidateSpellInfo({ SPELL_RIDE_PLAYER });
         }
 
         void OnPeriodic(AuraEffect const* /*aurEff*/)
@@ -1301,9 +1307,7 @@ public:
 
         bool Validate(SpellInfo const* /*spell*/) override
         {
-            if (!sSpellMgr->GetSpellInfo(SPELL_PARALYSIS))
-                return false;
-            return true;
+            return ValidateSpellInfo({ SPELL_PARALYSIS });
         }
 
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -1339,7 +1343,7 @@ public:
                 slowEff->ChangeAmount(newAmount);
 
                 if (newAmount <= -100 && !GetTarget()->HasAura(SPELL_PARALYSIS))
-                    GetTarget()->CastSpell(GetTarget(), SPELL_PARALYSIS, true, NULL, slowEff, GetCasterGUID());
+                    GetTarget()->CastSpell(GetTarget(), SPELL_PARALYSIS, true, nullptr, slowEff, GetCasterGUID());
             }
         }
 
@@ -1361,7 +1365,7 @@ public:
 class spell_jormungars_snakes_spray : public SpellScriptLoader
 {
 public:
-    spell_jormungars_snakes_spray(const char* name, uint32 spellId) : SpellScriptLoader(name), _spellId(spellId) { }
+    spell_jormungars_snakes_spray(char const* name, uint32 spellId) : SpellScriptLoader(name), _spellId(spellId) { }
 
     class spell_jormungars_snakes_spray_SpellScript : public SpellScript
     {
@@ -1370,11 +1374,10 @@ public:
     public:
         spell_jormungars_snakes_spray_SpellScript(uint32 spellId) : SpellScript(), _spellId(spellId) { }
 
+    private:
         bool Validate(SpellInfo const* /*spell*/) override
         {
-            if (!sSpellMgr->GetSpellInfo(_spellId))
-                return false;
-            return true;
+            return ValidateSpellInfo({ _spellId });
         }
 
         void HandleScript(SpellEffIndex /*effIndex*/)
@@ -1388,7 +1391,6 @@ public:
             OnEffectHitTarget += SpellEffectFn(spell_jormungars_snakes_spray_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
         }
 
-    private:
         uint32 _spellId;
     };
 
