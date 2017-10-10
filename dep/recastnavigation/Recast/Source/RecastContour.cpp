@@ -44,10 +44,10 @@ static int getCornerHeight(int x, int y, int i, int dir,
 	{
 		const int ax = x + rcGetDirOffsetX(dir);
 		const int ay = y + rcGetDirOffsetY(dir);
-		const int aipbot = (int)chf.cells[ax+ay*chf.width].index + rcGetCon(s, dir);
-		const rcCompactSpan& as = chf.spans[aipbot];
+		const int ai = (int)chf.cells[ax+ay*chf.width].index + rcGetCon(s, dir);
+		const rcCompactSpan& as = chf.spans[ai];
 		ch = rcMax(ch, (int)as.y);
-		regs[1] = chf.spans[aipbot].reg | (chf.areas[aipbot] << 16);
+		regs[1] = chf.spans[ai].reg | (chf.areas[ai] << 16);
 		if (rcGetCon(as, dirp) != RC_NOT_CONNECTED)
 		{
 			const int ax2 = ax + rcGetDirOffsetX(dirp);
@@ -62,10 +62,10 @@ static int getCornerHeight(int x, int y, int i, int dir,
 	{
 		const int ax = x + rcGetDirOffsetX(dirp);
 		const int ay = y + rcGetDirOffsetY(dirp);
-		const int aipbot = (int)chf.cells[ax+ay*chf.width].index + rcGetCon(s, dirp);
-		const rcCompactSpan& as = chf.spans[aipbot];
+		const int ai = (int)chf.cells[ax+ay*chf.width].index + rcGetCon(s, dirp);
+		const rcCompactSpan& as = chf.spans[ai];
 		ch = rcMax(ch, (int)as.y);
-		regs[3] = chf.spans[aipbot].reg | (chf.areas[aipbot] << 16);
+		regs[3] = chf.spans[ai].reg | (chf.areas[ai] << 16);
 		if (rcGetCon(as, dir) != RC_NOT_CONNECTED)
 		{
 			const int ax2 = ax + rcGetDirOffsetX(dir);
@@ -138,9 +138,9 @@ static void walkContour(int x, int y, int i,
 			{
 				const int ax = x + rcGetDirOffsetX(dir);
 				const int ay = y + rcGetDirOffsetY(dir);
-				const int aipbot = (int)chf.cells[ax+ay*chf.width].index + rcGetCon(s, dir);
-				r = (int)chf.spans[aipbot].reg;
-				if (area != chf.areas[aipbot])
+				const int ai = (int)chf.cells[ax+ay*chf.width].index + rcGetCon(s, dir);
+				r = (int)chf.spans[ai].reg;
+				if (area != chf.areas[ai])
 					isAreaBorder = true;
 			}
 			if (isBorderVertex)
@@ -293,7 +293,7 @@ static void simplifyContour(rcIntArray& points, rcIntArray& simplified,
 		
 		int ax = simplified[i*4+0];
 		int az = simplified[i*4+2];
-		int aipbot = simplified[i*4+3];
+		int ai = simplified[i*4+3];
 
 		int bx = simplified[ii*4+0];
 		int bz = simplified[ii*4+2];
@@ -310,14 +310,14 @@ static void simplifyContour(rcIntArray& points, rcIntArray& simplified,
 		if (bx > ax || (bx == ax && bz > az))
 		{
 			cinc = 1;
-			ci = (aipbot+cinc) % pn;
+			ci = (ai+cinc) % pn;
 			endi = bi;
 		}
 		else
 		{
 			cinc = pn-1;
 			ci = (bi+cinc) % pn;
-			endi = aipbot;
+			endi = ai;
 			rcSwap(ax, bx);
 			rcSwap(az, bz);
 		}
@@ -374,7 +374,7 @@ static void simplifyContour(rcIntArray& points, rcIntArray& simplified,
 			
 			const int ax = simplified[i*4+0];
 			const int az = simplified[i*4+2];
-			const int aipbot = simplified[i*4+3];
+			const int ai = simplified[i*4+3];
 			
 			const int bx = simplified[ii*4+0];
 			const int bz = simplified[ii*4+2];
@@ -382,7 +382,7 @@ static void simplifyContour(rcIntArray& points, rcIntArray& simplified,
 			
 			// Find maximum deviation from the segment.
 			int maxi = -1;
-			int ci = (aipbot+1) % pn;
+			int ci = (ai+1) % pn;
 			
 			// Tessellate only outer edges or edges between areas.
 			bool tess = false;
@@ -402,13 +402,13 @@ static void simplifyContour(rcIntArray& points, rcIntArray& simplified,
 					// Round based on the segments in lexilogical order so that the
 					// max tesselation is consistent regardles in which direction
 					// segments are traversed.
-					const int n = bi < aipbot ? (bi+pn - aipbot) : (bi - aipbot);
+					const int n = bi < ai ? (bi+pn - ai) : (bi - ai);
 					if (n > 1)
 					{
 						if (bx > ax || (bx == ax && bz > az))
-							maxi = (aipbot + n/2) % pn;
+							maxi = (ai + n/2) % pn;
 						else
-							maxi = (aipbot + (n+1)/2) % pn;
+							maxi = (ai + (n+1)/2) % pn;
 					}
 				}
 			}
@@ -444,9 +444,9 @@ static void simplifyContour(rcIntArray& points, rcIntArray& simplified,
 	{
 		// The edge vertex flag is take from the current raw point,
 		// and the neighbour region is take from the next raw point.
-		const int aipbot = (simplified[i*4+3]+1) % pn;
+		const int ai = (simplified[i*4+3]+1) % pn;
 		const int bi = simplified[i*4+3];
-		simplified[i*4+3] = (points[aipbot*4+3] & (RC_CONTOUR_REG_MASK|RC_AREA_BORDER)) | (points[bi*4+3] & RC_BORDER_VERTEX);
+		simplified[i*4+3] = (points[ai*4+3] & (RC_CONTOUR_REG_MASK|RC_AREA_BORDER)) | (points[bi*4+3] & RC_BORDER_VERTEX);
 	}
 	
 }
@@ -888,8 +888,8 @@ bool rcBuildContours(rcContext* ctx, rcCompactHeightfield& chf,
 					{
 						const int ax = x + rcGetDirOffsetX(dir);
 						const int ay = y + rcGetDirOffsetY(dir);
-						const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
-						r = chf.spans[aipbot].reg;
+						const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
+						r = chf.spans[ai].reg;
 					}
 					if (r == chf.spans[i].reg)
 						res |= (1 << dir);

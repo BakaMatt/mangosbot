@@ -1067,8 +1067,8 @@ static void getHeightData(rcContext* ctx, const rcCompactHeightfield& chf,
 							{
 								const int ax = x + rcGetDirOffsetX(dir);
 								const int ay = y + rcGetDirOffsetY(dir);
-								const int aipbot = (int)chf.cells[ax + ay*chf.width].index + rcGetCon(s, dir);
-								const rcCompactSpan& as = chf.spans[aipbot];
+								const int ai = (int)chf.cells[ax + ay*chf.width].index + rcGetCon(s, dir);
+								const rcCompactSpan& as = chf.spans[ai];
 								if (as.reg != region)
 								{
 									border = true;
@@ -1127,12 +1127,12 @@ static void getHeightData(rcContext* ctx, const rcCompactHeightfield& chf,
 			if (hp.data[hx + hy*hp.width] != RC_UNSET_HEIGHT)
 				continue;
 			
-			const int aipbot = (int)chf.cells[ax + ay*chf.width].index + rcGetCon(cs, dir);
-			const rcCompactSpan& as = chf.spans[aipbot];
+			const int ai = (int)chf.cells[ax + ay*chf.width].index + rcGetCon(cs, dir);
+			const rcCompactSpan& as = chf.spans[ai];
 			
 			hp.data[hx + hy*hp.width] = as.y;
 			
-			push3(queue, ax, ay, aipbot);
+			push3(queue, ax, ay, ai);
 		}
 	}
 }

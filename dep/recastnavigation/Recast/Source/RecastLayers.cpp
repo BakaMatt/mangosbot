@@ -142,9 +142,9 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 				{
 					const int ax = x + rcGetDirOffsetX(0);
 					const int ay = y + rcGetDirOffsetY(0);
-					const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 0);
-					if (chf.areas[aipbot] != RC_NULL_AREA && srcReg[aipbot] != 0xff)
-						sid = srcReg[aipbot];
+					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 0);
+					if (chf.areas[ai] != RC_NULL_AREA && srcReg[ai] != 0xff)
+						sid = srcReg[ai];
 				}
 				
 				if (sid == 0xff)
@@ -159,8 +159,8 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 				{
 					const int ax = x + rcGetDirOffsetX(3);
 					const int ay = y + rcGetDirOffsetY(3);
-					const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 3);
-					const unsigned char nr = srcReg[aipbot];
+					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 3);
+					const unsigned char nr = srcReg[ai];
 					if (nr != 0xff)
 					{
 						// Set neighbour when first valid neighbour is encoutered.
@@ -264,8 +264,8 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 					{
 						const int ax = x + rcGetDirOffsetX(dir);
 						const int ay = y + rcGetDirOffsetY(dir);
-						const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
-						const unsigned char rai = srcReg[aipbot];
+						const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
+						const unsigned char rai = srcReg[ai];
 						if (rai != 0xff && rai != ri)
 						{
 							// Don't check return value -- if we cannot add the neighbor
@@ -607,19 +607,19 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 						{
 							const int ax = cx + rcGetDirOffsetX(dir);
 							const int ay = cy + rcGetDirOffsetY(dir);
-							const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
-							unsigned char alid = srcReg[aipbot] != 0xff ? regs[srcReg[aipbot]].layerId : 0xff;
+							const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
+							unsigned char alid = srcReg[ai] != 0xff ? regs[srcReg[ai]].layerId : 0xff;
 							// Portal mask
-							if (chf.areas[aipbot] != RC_NULL_AREA && lid != alid)
+							if (chf.areas[ai] != RC_NULL_AREA && lid != alid)
 							{
 								portal |= (unsigned char)(1<<dir);
 								// Update height so that it matches on both sides of the portal.
-								const rcCompactSpan& as = chf.spans[aipbot];
+								const rcCompactSpan& as = chf.spans[ai];
 								if (as.y > hmin)
 									layer->heights[idx] = rcMax(layer->heights[idx], (unsigned char)(as.y - hmin));
 							}
 							// Valid connection mask
-							if (chf.areas[aipbot] != RC_NULL_AREA && lid == alid)
+							if (chf.areas[ai] != RC_NULL_AREA && lid == alid)
 							{
 								const int nx = ax - borderSize;
 								const int ny = ay - borderSize;
