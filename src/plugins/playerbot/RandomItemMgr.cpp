@@ -61,6 +61,7 @@ public:
         return false;
     }
 
+
 private:
     bool equip;
 };

@@ -32,6 +32,7 @@ endif()
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(worldserver
+  ${PRIVATE_PCH_SOURCE}	   
   ${PRIVATE_SOURCES}
 )
 
@@ -49,9 +50,9 @@ set_target_properties(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAG
 
 target_link_libraries(worldserver
   PUBLIC
-  plugins
     scripts
     game
+	plugins
     gsoap
     readline)
 

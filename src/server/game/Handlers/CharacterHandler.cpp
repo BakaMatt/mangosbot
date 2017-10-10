@@ -84,31 +84,31 @@ public:
 
 void PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
 {
-    // has bot already been added?
-	Player* bot = sObjectMgr->GetPlayerByLowGUID(playerGuid);
+	// has bot already been added?
+	Player* bot = ObjectAccessor::FindPlayerByLowGUID(playerGuid);
 
 	if (bot && bot->IsInWorld())
-        return;
+		return;
 
-    uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(ObjectGuid(playerGuid));
-    if (accountId == 0)
-        return;
+	uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(ObjectGuid(playerGuid));
+	if (accountId == 0)
+		return;
 
-    PlayerbotLoginQueryHolder *holder = new PlayerbotLoginQueryHolder(this, masterAccount, accountId, playerGuid);
-    if(!holder->Initialize())
-    {
-        delete holder;                                      // delete all unprocessed queries
-        return;
-    }
+	PlayerbotLoginQueryHolder *holder = new PlayerbotLoginQueryHolder(this, masterAccount, accountId, playerGuid);
+	if (!holder->Initialize())
+	{
+		delete holder;                                      // delete all unprocessed queries
+		return;
+	}
 
-    QueryResultHolderFuture future = CharacterDatabase.DelayQueryHolder(holder);
-    future.get();
+	QueryResultHolderFuture future = CharacterDatabase.DelayQueryHolder(holder);
+	future.get();
 
-    WorldSession* masterSession = masterAccount ? sWorld->FindSession(masterAccount) : NULL;
-    uint32 botAccountId = holder->GetAccountId();
-    WorldSession *botSession = new WorldSession(botAccountId, "bot", NULL, SEC_PLAYER, 2, 0, LOCALE_enUS, 0, false);
+	WorldSession* masterSession = masterAccount ? sWorld->FindSession(masterAccount) : NULL;
+	uint32 botAccountId = holder->GetAccountId();
+	WorldSession *botSession = new WorldSession(botAccountId, "bot", NULL, SEC_PLAYER, 2, 0, LOCALE_enUS, 0, false);
 
-    botSession->HandlePlayerLogin(holder); // will delete lqh
+	botSession->HandlePlayerLogin(holder); // will delete lqh
 
 	bot = botSession->GetPlayer();
 	if (!bot)
@@ -119,22 +119,22 @@ void PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
 	delete mgr;
 	sRandomPlayerbotMgr.OnPlayerLogout(bot);
 
-    bool allowed = false;
-    if (botAccountId == masterAccount)
-        allowed = true;
-    else if (masterSession && sPlayerbotAIConfig.allowGuildBots && bot->GetGuildId() == masterSession->GetPlayer()->GetGuildId())
-        allowed = true;
-    else if (sPlayerbotAIConfig.IsInRandomAccountList(botAccountId))
-        allowed = true;
+	bool allowed = false;
+	if (botAccountId == masterAccount)
+		allowed = true;
+	else if (masterSession && sPlayerbotAIConfig.allowGuildBots && bot->GetGuildId() == masterSession->GetPlayer()->GetGuildId())
+		allowed = true;
+	else if (sPlayerbotAIConfig.IsInRandomAccountList(botAccountId))
+		allowed = true;
 
-    if (allowed)
-        OnBotLogin(bot);
-    else if (masterSession)
-    {
-        ChatHandler ch(masterSession);
-        ch.PSendSysMessage("You are not allowed to control bot %s...", bot->GetName().c_str());
-        LogoutPlayerBot(bot->GetGUID());
-    }
+	if (allowed)
+		OnBotLogin(bot);
+	else if (masterSession)
+	{
+		ChatHandler ch(masterSession);
+		ch.PSendSysMessage("You are not allowed to control bot %s...", bot->GetName().c_str());
+		LogoutPlayerBot(bot->GetGUID());
+	}
 }
 
 bool LoginQueryHolder::Initialize()

@@ -20,10 +20,11 @@
 
 #include "SharedDefines.h"
 #include "DatabaseEnvFwd.h"
-#include "GameTime.h"
+#include <chrono>
 #include <deque>
 #include <vector>
 #include <unordered_map>
+#include "GameTime.h"
 
 class Item;
 class Player;

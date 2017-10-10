@@ -2,11 +2,12 @@
 #include "../../playerbot.h"
 #include "../values/LastMovementValue.h"
 #include "MovementActions.h"
-#include "../../../Movement/MotionMaster.h"
-#include "../../../Movement/MovementGenerator.h"
+#include "MotionMaster.h"
+#include "MovementGenerator.h"
 #include "../../FleeManager.h"
 #include "../../LootObjectStack.h"
 #include "../../PlayerbotAIConfig.h"
+#include "GameObject.h"
 
 using namespace ai;
 
@@ -21,7 +22,7 @@ bool MovementAction::MoveNear(WorldObject* target, float distance)
     if (!target)
         return false;
 
-    distance += target->GetObjectSize() / 2.0f;
+    distance += target->GetCombatReach() / 2.0f;
 
     float followAngle = GetFollowAngle();
     for (float angle = followAngle; angle <= followAngle + 2 * M_PI; angle += M_PI / 4)
@@ -154,7 +155,7 @@ bool MovementAction::IsMovingAllowed(uint32 mapId, float x, float y, float z)
 bool MovementAction::IsMovingAllowed()
 {
     if (bot->isFrozen() || bot->IsPolymorphed() ||
-			(bot->isDead() && !bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST)) ||
+            (bot->isDead() && !bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST)) ||
             bot->IsBeingTeleported() ||
             bot->isInRoots() ||
             bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) || bot->IsCharmed() ||

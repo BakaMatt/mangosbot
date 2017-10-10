@@ -2125,8 +2125,8 @@ class spell_yogg_saron_brain_link : public SpellScriptLoader    // 63802
                     return;
                 }
 
-                if (SaraAI* ai = CAST_AI(SaraAI, GetCaster()->GetAI()))
-                    ai->SetLinkBetween(targets.front()->GetGUID(), targets.back()->GetGUID());
+                if (SaraAI* aipbot = CAST_AI(SaraAI, GetCaster()->GetAI()))
+                    aipbot->SetLinkBetween(targets.front()->GetGUID(), targets.back()->GetGUID());
             }
 
             void Register() override
@@ -2150,15 +2150,15 @@ class spell_yogg_saron_brain_link : public SpellScriptLoader    // 63802
                 if (!caster)
                     return;
 
-                if (SaraAI* ai = CAST_AI(SaraAI, caster->GetAI()))
+                if (SaraAI* aipbot = CAST_AI(SaraAI, caster->GetAI()))
                 {
                     if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-                        ai->RemoveLinkFrom(GetTarget()->GetGUID());
+                        aipbot->RemoveLinkFrom(GetTarget()->GetGUID());
                     else
                     {
-                        if (Player* player = ObjectAccessor::GetPlayer(*GetTarget(), ai->GetLinkedPlayerGUID(GetTarget()->GetGUID())))
+                        if (Player* player = ObjectAccessor::GetPlayer(*GetTarget(), aipbot->GetLinkedPlayerGUID(GetTarget()->GetGUID())))
                         {
-                            ai->RemoveLinkFrom(GetTarget()->GetGUID());
+                            aipbot->RemoveLinkFrom(GetTarget()->GetGUID());
                             player->RemoveAurasDueToSpell(SPELL_BRAIN_LINK);
                         }
                     }
@@ -2171,11 +2171,11 @@ class spell_yogg_saron_brain_link : public SpellScriptLoader    // 63802
                 if (!caster)
                     return;
 
-                SaraAI* ai = CAST_AI(SaraAI, caster->GetAI());
-                if (!ai)
+                SaraAI* aipbot = CAST_AI(SaraAI, caster->GetAI());
+                if (!aipbot)
                     return;
 
-                Player* linked = ObjectAccessor::GetPlayer(*GetTarget(), ai->GetLinkedPlayerGUID(GetTarget()->GetGUID()));
+                Player* linked = ObjectAccessor::GetPlayer(*GetTarget(), aipbot->GetLinkedPlayerGUID(GetTarget()->GetGUID()));
                 if (!linked)
                     return;
 

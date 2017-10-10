@@ -55,8 +55,8 @@ static void calculateDistanceField(rcCompactHeightfield& chf, unsigned short* sr
 					{
 						const int ax = x + rcGetDirOffsetX(dir);
 						const int ay = y + rcGetDirOffsetY(dir);
-						const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
-						if (area == chf.areas[ai])
+						const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
+						if (area == chf.areas[aipbot])
 							nc++;
 					}
 				}
@@ -82,10 +82,10 @@ static void calculateDistanceField(rcCompactHeightfield& chf, unsigned short* sr
 					// (-1,0)
 					const int ax = x + rcGetDirOffsetX(0);
 					const int ay = y + rcGetDirOffsetY(0);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 0);
-					const rcCompactSpan& as = chf.spans[ai];
-					if (src[ai]+2 < src[i])
-						src[i] = src[ai]+2;
+					const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 0);
+					const rcCompactSpan& as = chf.spans[aipbot];
+					if (src[aipbot]+2 < src[i])
+						src[i] = src[aipbot]+2;
 					
 					// (-1,-1)
 					if (rcGetCon(as, 3) != RC_NOT_CONNECTED)
@@ -102,10 +102,10 @@ static void calculateDistanceField(rcCompactHeightfield& chf, unsigned short* sr
 					// (0,-1)
 					const int ax = x + rcGetDirOffsetX(3);
 					const int ay = y + rcGetDirOffsetY(3);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 3);
-					const rcCompactSpan& as = chf.spans[ai];
-					if (src[ai]+2 < src[i])
-						src[i] = src[ai]+2;
+					const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 3);
+					const rcCompactSpan& as = chf.spans[aipbot];
+					if (src[aipbot]+2 < src[i])
+						src[i] = src[aipbot]+2;
 					
 					// (1,-1)
 					if (rcGetCon(as, 2) != RC_NOT_CONNECTED)
@@ -136,10 +136,10 @@ static void calculateDistanceField(rcCompactHeightfield& chf, unsigned short* sr
 					// (1,0)
 					const int ax = x + rcGetDirOffsetX(2);
 					const int ay = y + rcGetDirOffsetY(2);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 2);
-					const rcCompactSpan& as = chf.spans[ai];
-					if (src[ai]+2 < src[i])
-						src[i] = src[ai]+2;
+					const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 2);
+					const rcCompactSpan& as = chf.spans[aipbot];
+					if (src[aipbot]+2 < src[i])
+						src[i] = src[aipbot]+2;
 					
 					// (1,1)
 					if (rcGetCon(as, 1) != RC_NOT_CONNECTED)
@@ -156,10 +156,10 @@ static void calculateDistanceField(rcCompactHeightfield& chf, unsigned short* sr
 					// (0,1)
 					const int ax = x + rcGetDirOffsetX(1);
 					const int ay = y + rcGetDirOffsetY(1);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 1);
-					const rcCompactSpan& as = chf.spans[ai];
-					if (src[ai]+2 < src[i])
-						src[i] = src[ai]+2;
+					const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 1);
+					const rcCompactSpan& as = chf.spans[aipbot];
+					if (src[aipbot]+2 < src[i])
+						src[i] = src[aipbot]+2;
 					
 					// (-1,1)
 					if (rcGetCon(as, 0) != RC_NOT_CONNECTED)
@@ -211,10 +211,10 @@ static unsigned short* boxBlur(rcCompactHeightfield& chf, int thr,
 					{
 						const int ax = x + rcGetDirOffsetX(dir);
 						const int ay = y + rcGetDirOffsetY(dir);
-						const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
-						d += (int)src[ai];
+						const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
+						d += (int)src[aipbot];
 						
-						const rcCompactSpan& as = chf.spans[ai];
+						const rcCompactSpan& as = chf.spans[aipbot];
 						const int dir2 = (dir+1) & 0x3;
 						if (rcGetCon(as, dir2) != RC_NOT_CONNECTED)
 						{
@@ -279,10 +279,10 @@ static bool floodRegion(int x, int y, int i,
 			{
 				const int ax = cx + rcGetDirOffsetX(dir);
 				const int ay = cy + rcGetDirOffsetY(dir);
-				const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(cs, dir);
-				if (chf.areas[ai] != area)
+				const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(cs, dir);
+				if (chf.areas[aipbot] != area)
 					continue;
-				unsigned short nr = srcReg[ai];
+				unsigned short nr = srcReg[aipbot];
 				if (nr & RC_BORDER_REG) // Do not take borders into account.
 					continue;
 				if (nr != 0 && nr != r)
@@ -291,7 +291,7 @@ static bool floodRegion(int x, int y, int i,
 					break;
 				}
 				
-				const rcCompactSpan& as = chf.spans[ai];
+				const rcCompactSpan& as = chf.spans[aipbot];
 				
 				const int dir2 = (dir+1) & 0x3;
 				if (rcGetCon(as, dir2) != RC_NOT_CONNECTED)
@@ -325,16 +325,16 @@ static bool floodRegion(int x, int y, int i,
 			{
 				const int ax = cx + rcGetDirOffsetX(dir);
 				const int ay = cy + rcGetDirOffsetY(dir);
-				const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(cs, dir);
-				if (chf.areas[ai] != area)
+				const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(cs, dir);
+				if (chf.areas[aipbot] != area)
 					continue;
-				if (chf.dist[ai] >= lev && srcReg[ai] == 0)
+				if (chf.dist[aipbot] >= lev && srcReg[aipbot] == 0)
 				{
-					srcReg[ai] = r;
-					srcDist[ai] = 0;
+					srcReg[aipbot] = r;
+					srcDist[aipbot] = 0;
 					stack.push(ax);
 					stack.push(ay);
-					stack.push(ai);
+					stack.push(aipbot);
 				}
 			}
 		}
@@ -413,14 +413,14 @@ static unsigned short* expandRegions(int maxIter, unsigned short level,
 				if (rcGetCon(s, dir) == RC_NOT_CONNECTED) continue;
 				const int ax = x + rcGetDirOffsetX(dir);
 				const int ay = y + rcGetDirOffsetY(dir);
-				const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
-				if (chf.areas[ai] != area) continue;
-				if (srcReg[ai] > 0 && (srcReg[ai] & RC_BORDER_REG) == 0)
+				const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
+				if (chf.areas[aipbot] != area) continue;
+				if (srcReg[aipbot] > 0 && (srcReg[aipbot] & RC_BORDER_REG) == 0)
 				{
-					if ((int)srcDist[ai]+2 < (int)d2)
+					if ((int)srcDist[aipbot]+2 < (int)d2)
 					{
-						r = srcReg[ai];
-						d2 = srcDist[ai]+2;
+						r = srcReg[aipbot];
+						d2 = srcDist[aipbot]+2;
 					}
 				}
 			}
@@ -680,8 +680,8 @@ static bool isSolidEdge(rcCompactHeightfield& chf, unsigned short* srcReg,
 	{
 		const int ax = x + rcGetDirOffsetX(dir);
 		const int ay = y + rcGetDirOffsetY(dir);
-		const int ai = (int)chf.cells[ax+ay*chf.width].index + rcGetCon(s, dir);
-		r = srcReg[ai];
+		const int aipbot = (int)chf.cells[ax+ay*chf.width].index + rcGetCon(s, dir);
+		r = srcReg[aipbot];
 	}
 	if (r == srcReg[i])
 		return false;
@@ -702,8 +702,8 @@ static void walkContour(int x, int y, int i, int dir,
 	{
 		const int ax = x + rcGetDirOffsetX(dir);
 		const int ay = y + rcGetDirOffsetY(dir);
-		const int ai = (int)chf.cells[ax+ay*chf.width].index + rcGetCon(ss, dir);
-		curReg = srcReg[ai];
+		const int aipbot = (int)chf.cells[ax+ay*chf.width].index + rcGetCon(ss, dir);
+		curReg = srcReg[aipbot];
 	}
 	cont.push(curReg);
 			
@@ -720,8 +720,8 @@ static void walkContour(int x, int y, int i, int dir,
 			{
 				const int ax = x + rcGetDirOffsetX(dir);
 				const int ay = y + rcGetDirOffsetY(dir);
-				const int ai = (int)chf.cells[ax+ay*chf.width].index + rcGetCon(s, dir);
-				r = srcReg[ai];
+				const int aipbot = (int)chf.cells[ax+ay*chf.width].index + rcGetCon(s, dir);
+				r = srcReg[aipbot];
 			}
 			if (r != curReg)
 			{
@@ -1090,8 +1090,8 @@ static bool mergeAndFilterLayerRegions(rcContext* ctx, int minRegionArea,
 					{
 						const int ax = x + rcGetDirOffsetX(dir);
 						const int ay = y + rcGetDirOffsetY(dir);
-						const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
-						const unsigned short rai = srcReg[ai];
+						const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
+						const unsigned short rai = srcReg[aipbot];
 						if (rai > 0 && rai < nreg && rai != ri)
 							addUniqueConnection(reg, rai);
 						if (rai & RC_BORDER_REG)
@@ -1420,9 +1420,9 @@ bool rcBuildRegionsMonotone(rcContext* ctx, rcCompactHeightfield& chf,
 				{
 					const int ax = x + rcGetDirOffsetX(0);
 					const int ay = y + rcGetDirOffsetY(0);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 0);
-					if ((srcReg[ai] & RC_BORDER_REG) == 0 && chf.areas[i] == chf.areas[ai])
-						previd = srcReg[ai];
+					const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 0);
+					if ((srcReg[aipbot] & RC_BORDER_REG) == 0 && chf.areas[i] == chf.areas[aipbot])
+						previd = srcReg[aipbot];
 				}
 				
 				if (!previd)
@@ -1438,10 +1438,10 @@ bool rcBuildRegionsMonotone(rcContext* ctx, rcCompactHeightfield& chf,
 				{
 					const int ax = x + rcGetDirOffsetX(3);
 					const int ay = y + rcGetDirOffsetY(3);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 3);
-					if (srcReg[ai] && (srcReg[ai] & RC_BORDER_REG) == 0 && chf.areas[i] == chf.areas[ai])
+					const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 3);
+					if (srcReg[aipbot] && (srcReg[aipbot] & RC_BORDER_REG) == 0 && chf.areas[i] == chf.areas[aipbot])
 					{
-						unsigned short nr = srcReg[ai];
+						unsigned short nr = srcReg[aipbot];
 						if (!sweeps[previd].nei || sweeps[previd].nei == nr)
 						{
 							sweeps[previd].nei = nr;
@@ -1738,9 +1738,9 @@ bool rcBuildLayerRegions(rcContext* ctx, rcCompactHeightfield& chf,
 				{
 					const int ax = x + rcGetDirOffsetX(0);
 					const int ay = y + rcGetDirOffsetY(0);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 0);
-					if ((srcReg[ai] & RC_BORDER_REG) == 0 && chf.areas[i] == chf.areas[ai])
-						previd = srcReg[ai];
+					const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 0);
+					if ((srcReg[aipbot] & RC_BORDER_REG) == 0 && chf.areas[i] == chf.areas[aipbot])
+						previd = srcReg[aipbot];
 				}
 				
 				if (!previd)
@@ -1756,10 +1756,10 @@ bool rcBuildLayerRegions(rcContext* ctx, rcCompactHeightfield& chf,
 				{
 					const int ax = x + rcGetDirOffsetX(3);
 					const int ay = y + rcGetDirOffsetY(3);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 3);
-					if (srcReg[ai] && (srcReg[ai] & RC_BORDER_REG) == 0 && chf.areas[i] == chf.areas[ai])
+					const int aipbot = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 3);
+					if (srcReg[aipbot] && (srcReg[aipbot] & RC_BORDER_REG) == 0 && chf.areas[i] == chf.areas[aipbot])
 					{
-						unsigned short nr = srcReg[ai];
+						unsigned short nr = srcReg[aipbot];
 						if (!sweeps[previd].nei || sweeps[previd].nei == nr)
 						{
 							sweeps[previd].nei = nr;

@@ -1569,3 +1569,4 @@ void WorldSession::HandleBotPackets()
 }
 
 WorldSession::DosProtection::DosProtection(WorldSession* s) : Session(s), _policy((Policy)sWorld->getIntConfig(CONFIG_PACKET_SPOOF_POLICY))
+{}

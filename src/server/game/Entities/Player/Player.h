@@ -2137,8 +2137,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         // Playerbot mod:
         // A Player can either have a playerbotMgr (to manage its bots), or have playerbotAI (if it is a bot), or
         // neither. Code that enables bots must create the playerbotMgr and set it using SetPlayerbotMgr.
-        EquipmentSets& GetEquipmentSets() { return m_EquipmentSets; }
-        void SetPlayerbotAI(PlayerbotAI* ai) { m_playerbotAI=ai; }
+        EquipmentSetContainer& GetEquipmentSets() { return _equipmentSets; }
+        void SetPlayerbotAI(PlayerbotAI* aipbot) { m_playerbotAI=aipbot; }
         PlayerbotAI* GetPlayerbotAI() { return m_playerbotAI; }
         void SetPlayerbotMgr(PlayerbotMgr* mgr) { m_playerbotMgr=mgr; }
         PlayerbotMgr* GetPlayerbotMgr() { return m_playerbotMgr; }

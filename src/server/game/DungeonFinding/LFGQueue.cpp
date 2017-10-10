@@ -530,20 +530,20 @@ LfgCompatibility LFGQueue::CheckCompatibility(GuidList check)
         return LFG_COMPATIBLES_WITH_LESS_PLAYERS;
     }
 
-    // playerbot mod
-    bool nonBotFound = false;
-    for (GuidList::const_iterator it = check.begin(); it != check.end(); ++it)
-    {
-        ObjectGuid guid = *it;
-        Player *player = sObjectMgr->GetPlayerByLowGUID(guid);
-        if (guid.IsGroup() || (player && !player->GetPlayerbotAI()))
-        {
-            nonBotFound = true;
-            break;
-        }
-    }
-    if (!nonBotFound)
-        return LFG_INCOMPATIBLES_HAS_IGNORES;
+	//playerbot mod
+	bool nonBotFound = false;
+	for (GuidList::const_iterator it = check.begin(); it != check.end(); ++it)
+	{
+		ObjectGuid guid = *it;
+		Player *player = ObjectAccessor::FindPlayerByLowGUID(guid);
+		if (guid.IsGroup() || (player && !player->GetPlayerbotAI()))
+		{
+			nonBotFound = true;
+			break;
+		}
+	}
+	if (!nonBotFound)
+		return LFG_INCOMPATIBLES_HAS_IGNORES;
     // end of playerbot mod
 
     ObjectGuid gguid = *check.begin();

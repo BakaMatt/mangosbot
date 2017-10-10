@@ -59,6 +59,7 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
+#include "GameTime.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {

@@ -1,4 +1,5 @@
 #pragma once
+#include "Item.h"
 
 char * strstri (const char* str1, const char* str2);
 
@@ -14,7 +15,7 @@ namespace ai
 
     class FindItemVisitor : public IterateItemsVisitor {
     public:
-        FindItemVisitor() : IterateItemsVisitor(), result(NULL) {}
+        FindItemVisitor() : IterateItemsVisitor(), result(0) {}
 
         virtual bool Visit(Item* item)
         {

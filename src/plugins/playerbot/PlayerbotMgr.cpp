@@ -3,7 +3,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
 #include "RandomPlayerbotMgr.h"
-
+#include "CharacterCache.h"
 
 class LoginQueryHolder;
 class CharacterHandler;
@@ -58,7 +58,7 @@ void PlayerbotHolder::LogoutPlayerBot(uint64 guid)
     {
         bot->GetPlayerbotAI()->TellMaster("Goodbye!");
         sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Bot %s logged out", bot->GetName());
-        //bot->SaveToDB();
+        bot->SaveToDB();
 
         WorldSession * botWorldSessionPtr = bot->GetSession();
         playerBots.erase(guid);    // deletes bot player ptr inside this WorldSession PlayerBotMap
@@ -75,9 +75,9 @@ Player* PlayerbotHolder::GetPlayerBot(uint64 playerGuid) const
 
 void PlayerbotHolder::OnBotLogin(Player * const bot)
 {
-	PlayerbotAI* ai = new PlayerbotAI(bot);
-	bot->SetPlayerbotAI(ai);
-	OnBotLoginInternal(bot);
+    PlayerbotAI* ai = new PlayerbotAI(bot);
+    bot->SetPlayerbotAI(ai);
+    OnBotLoginInternal(bot);
 
     playerBots[bot->GetGUID()] = bot;
 
@@ -98,7 +98,7 @@ void PlayerbotHolder::OnBotLogin(Player * const bot)
         for (Group::MemberSlotList::const_iterator i = slots.begin(); i != slots.end(); ++i)
         {
             ObjectGuid member = i->guid;
-            uint32 account = sObjectMgr->GetPlayerAccountIdByGUID(member);
+            uint32 account = sCharacterCache->GetCharacterAccountIdByGuid(member);
             if (!sPlayerbotAIConfig.IsInRandomAccountList(account))
             {
                 groupValid = true;
@@ -117,7 +117,6 @@ void PlayerbotHolder::OnBotLogin(Player * const bot)
 
     ai->ResetStrategies();
     ai->TellMaster("Hello!");
-    sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Bot %s logged in", bot->GetName());
 }
 
 string PlayerbotHolder::ProcessBotCommand(string cmd, ObjectGuid guid, bool admin, uint32 masterAccountId, uint32 masterGuildId)
@@ -125,14 +124,14 @@ string PlayerbotHolder::ProcessBotCommand(string cmd, ObjectGuid guid, bool admi
     if (!sPlayerbotAIConfig.enabled || guid.IsEmpty())
         return "bot system is disabled";
 
-    uint32 botAccount = sObjectMgr->GetPlayerAccountIdByGUID(guid);
+    uint32 botAccount = sCharacterCache->GetCharacterAccountIdByGuid(guid);
     bool isRandomBot = sRandomPlayerbotMgr.IsRandomBot(guid);
     bool isRandomAccount = sPlayerbotAIConfig.IsInRandomAccountList(botAccount);
     bool isMasterAccount = (masterAccountId == botAccount);
 
     if (isRandomAccount && !isRandomBot && !admin)
     {
-        Player* bot = sObjectMgr->GetPlayerByLowGUID(guid);
+        Player* bot = ObjectAccessor::FindPlayer(guid);
         if (bot->GetGuildId() != masterGuildId)
             return "not in your guild";
     }
@@ -142,7 +141,7 @@ string PlayerbotHolder::ProcessBotCommand(string cmd, ObjectGuid guid, bool admi
 
     if (cmd == "add" || cmd == "login")
     {
-        if (sObjectMgr->GetPlayerByLowGUID(guid))
+        if (ObjectAccessor::FindPlayer(guid))
             return "player already logged in";
 
         AddPlayerBot(guid.GetRawValue(), masterAccountId);
@@ -150,7 +149,7 @@ string PlayerbotHolder::ProcessBotCommand(string cmd, ObjectGuid guid, bool admi
     }
     else if (cmd == "remove" || cmd == "logout" || cmd == "rm")
     {
-        if (!sObjectMgr->GetPlayerByLowGUID(guid))
+        if (!ObjectAccessor::FindPlayer(guid))
             return "player is offline";
 
         if (!GetPlayerBot(guid.GetRawValue()))
@@ -213,12 +212,12 @@ string PlayerbotHolder::ProcessBotCommand(string cmd, ObjectGuid guid, bool admi
 
 bool PlayerbotMgr::HandlePlayerbotMgrCommand(ChatHandler* handler, char const* args)
 {
-	if (!sPlayerbotAIConfig.enabled)
-	{
-		handler->PSendSysMessage("|cffff0000Playerbot system is currently disabled!");
-		handler->SetSentErrorMessage(true);
+    if (!sPlayerbotAIConfig.enabled)
+    {
+        handler->PSendSysMessage("|cffff0000Playerbot system is currently disabled!");
+        handler->SetSentErrorMessage(true);
         return false;
-	}
+    }
 
     WorldSession *m_session = handler->GetSession();
 
@@ -263,7 +262,7 @@ list<string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Player* m
 
     char *cmd = strtok ((char*)args, " ");
     char *charname = strtok (NULL, " ");
-    if (!cmd)
+    if (!cmd || !charname)
     {
         messages.push_back("usage: list or add/init/remove PLAYERNAME");
         return messages;
@@ -297,14 +296,14 @@ list<string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Player* m
         Group::MemberSlotList slots = group->GetMemberSlots();
         for (Group::member_citerator i = slots.begin(); i != slots.end(); i++)
         {
-			ObjectGuid member = i->guid;
+            ObjectGuid member = i->guid;
 
-			if (member == master->GetGUID())
-				continue;
+            if (member == master->GetGUID())
+                continue;
 
-			string bot;
-			if (sObjectMgr->GetPlayerNameByGUID(member, bot))
-			    bots.insert(bot);
+            string bot;
+            if (sCharacterCache->GetCharacterNameByGuid(member, bot))
+                bots.insert(bot);
         }
     }
 
@@ -342,7 +341,7 @@ list<string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Player* m
                 bots.insert(charName);
             } while (results->NextRow());
         }
-	}
+    }
 
     for (set<string>::iterator i = bots.begin(); i != bots.end(); ++i)
     {
@@ -350,7 +349,7 @@ list<string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Player* m
         ostringstream out;
         out << cmdStr << ": " << bot << " - ";
 
-        ObjectGuid member = sObjectMgr->GetPlayerGUIDByName(bot);
+        ObjectGuid member = sCharacterCache->GetCharacterGuidByName(bot);
         if (!member)
         {
             out << "character not found";
@@ -415,7 +414,7 @@ string PlayerbotHolder::ListBots(Player* master)
 
     if (master)
     {
-        QueryResult results = CharacterDatabase.PQuery("SELECT class,name FROM tc_characters_19.characters where account = '%u'",
+        QueryResult results = CharacterDatabase.PQuery("SELECT class,name FROM characters where account = '%u'",
                 master->GetSession()->GetAccountId());
         if (results != NULL)
         {

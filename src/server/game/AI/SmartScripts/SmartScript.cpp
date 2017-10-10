@@ -1084,14 +1084,14 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             {
                 if (IsCreature(target))
                 {
-                    SmartAI* ai = CAST_AI(SmartAI, target->ToCreature()->AI());
-                    if (!ai)
+                    SmartAI* aipbot = CAST_AI(SmartAI, target->ToCreature()->AI());
+                    if (!aipbot)
                         continue;
 
                     if (e.action.invincHP.percent)
-                        ai->SetInvincibilityHpLevel(target->ToCreature()->CountPctFromMaxHealth(e.action.invincHP.percent));
+                        aipbot->SetInvincibilityHpLevel(target->ToCreature()->CountPctFromMaxHealth(e.action.invincHP.percent));
                     else
-                        ai->SetInvincibilityHpLevel(e.action.invincHP.minHP);
+                        aipbot->SetInvincibilityHpLevel(e.action.invincHP.minHP);
                 }
             }
             break;
@@ -1291,15 +1291,15 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     if (IsCreature(target))
                     {
-                        if (SmartAI* ai = CAST_AI(SmartAI, target->ToCreature()->AI()))
-                            ai->GetScript()->StoreCounter(e.action.setCounter.counterId, e.action.setCounter.value, e.action.setCounter.reset);
+                        if (SmartAI* aipbot = CAST_AI(SmartAI, target->ToCreature()->AI()))
+                            aipbot->GetScript()->StoreCounter(e.action.setCounter.counterId, e.action.setCounter.value, e.action.setCounter.reset);
                         else
                             TC_LOG_ERROR("sql.sql", "SmartScript: Action target for SMART_ACTION_SET_COUNTER is not using SmartAI, skipping");
                     }
                     else if (IsGameObject(target))
                     {
-                        if (SmartGameObjectAI* ai = CAST_AI(SmartGameObjectAI, target->ToGameObject()->AI()))
-                            ai->GetScript()->StoreCounter(e.action.setCounter.counterId, e.action.setCounter.value, e.action.setCounter.reset);
+                        if (SmartGameObjectAI* aipbot = CAST_AI(SmartGameObjectAI, target->ToGameObject()->AI()))
+                            aipbot->GetScript()->StoreCounter(e.action.setCounter.counterId, e.action.setCounter.value, e.action.setCounter.reset);
                         else
                             TC_LOG_ERROR("sql.sql", "SmartScript: Action target for SMART_ACTION_SET_COUNTER is not using SmartGameObjectAI, skipping");
                     }
@@ -1828,15 +1828,15 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             {
                 if (IsCreature(target))
                 {
-                    if (SmartAI* ai = CAST_AI(SmartAI, target->ToCreature()->AI()))
-                        ai->GetScript()->StoreTargetList(ObjectVector(*storedTargets), e.action.sendTargetToTarget.id);   // store a copy of target list
+                    if (SmartAI* aipbot = CAST_AI(SmartAI, target->ToCreature()->AI()))
+                        aipbot->GetScript()->StoreTargetList(ObjectVector(*storedTargets), e.action.sendTargetToTarget.id);   // store a copy of target list
                     else
                         TC_LOG_ERROR("sql.sql", "SmartScript: Action target for SMART_ACTION_SEND_TARGET_TO_TARGET is not using SmartAI, skipping");
                 }
                 else if (IsGameObject(target))
                 {
-                    if (SmartGameObjectAI* ai = CAST_AI(SmartGameObjectAI, target->ToGameObject()->AI()))
-                        ai->GetScript()->StoreTargetList(ObjectVector(*storedTargets), e.action.sendTargetToTarget.id);   // store a copy of target list
+                    if (SmartGameObjectAI* aipbot = CAST_AI(SmartGameObjectAI, target->ToGameObject()->AI()))
+                        aipbot->GetScript()->StoreTargetList(ObjectVector(*storedTargets), e.action.sendTargetToTarget.id);   // store a copy of target list
                     else
                         TC_LOG_ERROR("sql.sql", "SmartScript: Action target for SMART_ACTION_SEND_TARGET_TO_TARGET is not using SmartGameObjectAI, skipping");
                 }

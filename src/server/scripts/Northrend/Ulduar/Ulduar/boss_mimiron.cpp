@@ -1815,18 +1815,18 @@ class spell_mimiron_fire_search : public SpellScriptLoader
             {
                 Unit* caster = GetCaster();
 
-                if (UnitAI* ai = caster->GetAI())
+                if (UnitAI* aipbot = caster->GetAI())
                 {
-                    if (caster->GetDistance2d(GetHitUnit()) <= 15.0f && ai->GetData(DATA_WATERSPRAY))
+                    if (caster->GetDistance2d(GetHitUnit()) <= 15.0f && aipbot->GetData(DATA_WATERSPRAY))
                     {
                         caster->CastSpell(GetHitUnit(), SPELL_WATER_SPRAY, true);
-                        ai->SetData(DATA_WATERSPRAY, 0);
-                        ai->SetData(DATA_MOVE_NEW, 1);
+                        aipbot->SetData(DATA_WATERSPRAY, 0);
+                        aipbot->SetData(DATA_MOVE_NEW, 1);
                     }
                     else if (caster->GetAI()->GetData(DATA_MOVE_NEW))
                     {
                         caster->GetMotionMaster()->MoveChase(GetHitUnit());
-                        ai->SetData(DATA_MOVE_NEW, 0);
+                        aipbot->SetData(DATA_MOVE_NEW, 0);
                     }
                 }
             }

@@ -1,14 +1,15 @@
 #include "../pchdef.h"
 #include "playerbot.h"
 #include "PlayerbotFactory.h"
-#include "../../server/game/Guilds/GuildMgr.h"
-#include "../Entities/Item/ItemTemplate.h"
+#include "GuildMgr.h"
+#include "ItemTemplate.h"
 #include "PlayerbotAIConfig.h"
-#include "../../shared/DataStores/DBCStore.h"
-#include "../Miscellaneous/SharedDefines.h"
+#include "DBCStore.h"
+#include "SharedDefines.h"
 #include "../ahbot/AhBot.h"
-#include "../Entities/Pet/Pet.h"
+#include "Pet.h"
 #include "RandomPlayerbotFactory.h"
+#include "Item.h"
 
 using namespace ai;
 using namespace std;
@@ -91,8 +92,9 @@ void PlayerbotFactory::Randomize(bool incremental)
     ClearInventory();
     bot->SaveToDB();
 
-    sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Initializing quests...");
-    InitQuests();
+    // @todo-playerbots
+    sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Initializing quests - Broken...");
+    //InitQuests();
     // quest rewards boost bot level, so reduce back
     bot->SetLevel(level);
     ClearInventory();
@@ -168,23 +170,23 @@ void PlayerbotFactory::InitPet()
         if (!map)
             return;
 
-		vector<uint32> ids;
-	    CreatureTemplateContainer const* creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
-	    for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer->begin(); i != creatureTemplateContainer->end(); ++i)
-	    {
-	        CreatureTemplate const& co = i->second;
+        vector<uint32> ids;
+        CreatureTemplateContainer const* creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
+        for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer->begin(); i != creatureTemplateContainer->end(); ++i)
+        {
+            CreatureTemplate const& co = i->second;
             if (!co.IsTameable(false))
                 continue;
 
             if (co.minlevel > bot->getLevel())
                 continue;
 
-			PetLevelInfo const* petInfo = sObjectMgr->GetPetLevelInfo(co.Entry, bot->getLevel());
+            PetLevelInfo const* petInfo = sObjectMgr->GetPetLevelInfo(co.Entry, bot->getLevel());
             if (!petInfo)
                 continue;
 
-			ids.push_back(i->first);
-		}
+            ids.push_back(i->first);
+        }
 
         if (ids.empty())
         {
@@ -192,10 +194,10 @@ void PlayerbotFactory::InitPet()
             return;
         }
 
-		for (int i = 0; i < 100; i++)
-		{
-			int index = urand(0, ids.size() - 1);
-			CreatureTemplate const* co = sObjectMgr->GetCreatureTemplate(ids[index]);
+        for (int i = 0; i < 100; i++)
+        {
+            int index = urand(0, ids.size() - 1);
+            CreatureTemplate const* co = sObjectMgr->GetCreatureTemplate(ids[index]);
 
             PetLevelInfo const* petInfo = sObjectMgr->GetPetLevelInfo(co->Entry, bot->getLevel());
             if (!petInfo)
@@ -210,8 +212,8 @@ void PlayerbotFactory::InitPet()
                 continue;
             }
 
-            pet->SetPosition(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetOrientation());
-            pet->setFaction(bot->getFaction());
+            pet->UpdatePosition(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetOrientation());
+            pet->SetFaction(bot->GetFaction());
             pet->SetLevel(bot->getLevel());
             bot->SetPetGUID(pet->GetGUID());
             bot->GetMap()->AddToMap(pet->ToCreature());
@@ -679,7 +681,7 @@ void PlayerbotFactory::InitEquipment(bool incremental)
             if (newItem)
             {
                 newItem->AddToWorld();
-                newItem->AddToUpdateQueueOf(bot);
+                AddItemToUpdateQueueOf(newItem, bot);
                 bot->AutoUnequipOffhandIfNeed();
                 EnchantItem(newItem);
                 break;
@@ -788,7 +790,7 @@ void PlayerbotFactory::InitSecondEquipmentSet()
             {
                 EnchantItem(newItem);
                 newItem->AddToWorld();
-                newItem->AddToUpdateQueueOf(bot);
+                AddItemToUpdateQueueOf(newItem, bot);
                 break;
             }
         }
@@ -834,7 +836,7 @@ void PlayerbotFactory::InitBags()
             if (newItem)
             {
                 newItem->AddToWorld();
-                newItem->AddToUpdateQueueOf(bot);
+                AddItemToUpdateQueueOf(newItem, bot);
                 break;
             }
         }
@@ -933,7 +935,7 @@ bool PlayerbotFactory::CanEquipUnseenItem(uint8 slot, uint16 &dest, uint32 item)
     if (pItem)
     {
         InventoryResult result = bot->CanEquipItem(slot, dest, pItem, true, false);
-        pItem->RemoveFromUpdateQueueOf(bot);
+        RemoveItemFromUpdateQueueOf(pItem, bot);
         delete pItem;
         return result == EQUIP_ERR_OK;
     }
@@ -1071,9 +1073,9 @@ void PlayerbotFactory::InitAvailableSpells()
         if (co.trainer_type == TRAINER_TYPE_CLASS && co.trainer_class != bot->getClass())
             continue;
 
-		uint32 trainerId = co.Entry;
+        uint32 trainerId = co.Entry;
 
-		TrainerSpellData const* trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
+        TrainerSpellData const* trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
         if (!trainer_spells)
             trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
 
@@ -1087,17 +1089,17 @@ void PlayerbotFactory::InitAvailableSpells()
             if (!tSpell)
                 continue;
 
-            if (!tSpell->learnedSpell[0] && !bot->IsSpellFitByClassAndRace(tSpell->learnedSpell[0]))
+            if (!tSpell->ReqAbility[0] && !bot->IsSpellFitByClassAndRace(tSpell->ReqAbility[0]))
                 continue;
 
             TrainerSpellState state = bot->GetTrainerSpellState(tSpell);
             if (state != TRAINER_SPELL_GREEN)
                 continue;
 
-            if (tSpell->learnedSpell)
-                bot->LearnSpell(tSpell->learnedSpell[0], false);
+            if (tSpell->ReqAbility)
+                bot->LearnSpell(tSpell->ReqAbility[0], false);
             else
-                ai->CastSpell(tSpell->spell, bot);
+                ai->CastSpell(tSpell->SpellID, bot);
         }
     }
 }
@@ -1158,7 +1160,7 @@ void PlayerbotFactory::InitTalents(uint32 specNo)
             }
 
             bot->LearnTalent(talentInfo->TalentID, maxRank);
-			spells.erase(spells.begin() + index);
+            spells.erase(spells.begin() + index);
         }
 
         freePoints = bot->GetFreeTalentPoints();
@@ -1191,7 +1193,7 @@ ObjectGuid PlayerbotFactory::GetRandomBot()
         {
             Field* fields = result->Fetch();
             ObjectGuid guid = ObjectGuid(HighGuid::Player, fields[0].GetUInt32());
-            if (!sObjectMgr->GetPlayerByLowGUID(guid))
+            if (!ObjectAccessor::FindPlayer(guid))
                 guids.push_back(guid);
         } while (result->NextRow());
     }
@@ -1204,14 +1206,14 @@ ObjectGuid PlayerbotFactory::GetRandomBot()
 }
 
 void AddPrevQuests(uint32 questId, list<uint32>& questIds)
-{
+{/* @todo playerbots
     Quest const *quest = sObjectMgr->GetQuestTemplate(questId);
-    for (Quest::PrevQuests::const_iterator iter = quest->prevQuests.begin(); iter != quest->prevQuests.end(); ++iter)
+    for (auto iter = quest->PrevChainQuests.begin(); iter != quest->PrevChainQuests.end(); ++iter)
     {
         uint32 prevId = abs(*iter);
         AddPrevQuests(prevId, questIds);
         questIds.push_back(prevId);
-    }
+    }*/
 }
 
 void PlayerbotFactory::InitQuests()
@@ -1484,7 +1486,7 @@ Item* PlayerbotFactory::StoreItem(uint32 itemId, uint32 count)
     if (msg != EQUIP_ERR_OK)
         return NULL;
 
-    return bot->StoreNewItem(sDest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
+    return bot->StoreNewItem(sDest, itemId, true, GenerateItemRandomPropertyId(itemId));
 }
 
 void PlayerbotFactory::InitInventoryTrade()
@@ -1726,6 +1728,7 @@ void PlayerbotFactory::InitGuild()
     int index = urand(0, guilds.size() - 1);
     uint32 guildId = guilds[index];
     Guild* guild = sGuildMgr->GetGuildById(guildId);
+    SQLTransaction trans(nullptr);
     if (!guild)
     {
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Invalid guild %u", guildId);
@@ -1733,5 +1736,6 @@ void PlayerbotFactory::InitGuild()
     }
 
     if (guild->GetMemberCount() < 10)
-        guild->AddMember(bot->GetGUID(), urand(GR_OFFICER, GR_INITIATE));
+        guild->AddMember(trans, bot->GetGUID(), urand(GR_OFFICER, GR_INITIATE));
+        //guild->AddMember(bot->GetGUID(), urand(GR_OFFICER, GR_INITIATE));
 }

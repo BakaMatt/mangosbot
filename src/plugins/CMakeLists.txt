@@ -84,6 +84,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Battlefield/Zones
   ${CMAKE_SOURCE_DIR}/src/server/game/Battlegrounds
   ${CMAKE_SOURCE_DIR}/src/server/game/Battlegrounds/Zones
+  ${CMAKE_SOURCE_DIR}/src/server/game/Cache
   ${CMAKE_SOURCE_DIR}/src/server/game/Calendar
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Channels
@@ -111,6 +112,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Globals
   ${CMAKE_SOURCE_DIR}/src/server/game/Grids/Cells
   ${CMAKE_SOURCE_DIR}/src/server/game/Grids/Notifiers
+  ${CMAKE_SOURCE_DIR}/src/server/game/Grids/Dynamic
   ${CMAKE_SOURCE_DIR}/src/server/game/Grids
   ${CMAKE_SOURCE_DIR}/src/server/game/Groups
   ${CMAKE_SOURCE_DIR}/src/server/game/Guilds
@@ -136,6 +138,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Spells
   ${CMAKE_SOURCE_DIR}/src/server/game/Spells/Auras
   ${CMAKE_SOURCE_DIR}/src/server/game/Texts
+  ${CMAKE_SOURCE_DIR}/src/server/game/Time
   ${CMAKE_SOURCE_DIR}/src/server/game/Tools
   ${CMAKE_SOURCE_DIR}/src/server/game/Tickets
   ${CMAKE_SOURCE_DIR}/src/server/game/Warden

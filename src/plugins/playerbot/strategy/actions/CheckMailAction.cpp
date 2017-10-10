@@ -1,8 +1,9 @@
 #include "../../../pchdef.h"
 #include "../../playerbot.h"
 #include "CheckMailAction.h"
-
+#include "Mail.h"
 #include "../../GuildTaskMgr.h"
+
 using namespace ai;
 
 bool CheckMailAction::Execute(Event event)
@@ -24,7 +25,7 @@ bool CheckMailAction::Execute(Event event)
         if (!mail || mail->state == MAIL_STATE_DELETED)
             continue;
 
-        Player* owner = sObjectMgr->GetPlayerByLowGUID(mail->sender);
+        Player* owner = ObjectAccessor::FindPlayerByLowGUID(mail->sender);
         if (!owner)
             continue;
 

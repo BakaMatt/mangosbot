@@ -106,7 +106,7 @@ enum Actions
 class BoneSpikeTargetSelector : public std::unary_function<Unit*, bool>
 {
     public:
-        BoneSpikeTargetSelector(UnitAI* ai) : _ai(ai) { }
+        BoneSpikeTargetSelector(UnitAI* aipbot) : _ai(aipbot) { }
 
         bool operator()(Unit* unit) const
         {

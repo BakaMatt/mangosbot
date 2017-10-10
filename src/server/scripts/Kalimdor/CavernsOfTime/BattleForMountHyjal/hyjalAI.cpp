@@ -677,11 +677,11 @@ void hyjalAI::DeSpawnVeins()
     {
         Creature* unit = ObjectAccessor::GetCreature((*me), instance->GetGuidData(DATA_JAINAPROUDMOORE));
         if (!unit)return;
-        hyjalAI* ai = CAST_AI(hyjalAI, unit->AI());
-        if (!ai)return;
+        hyjalAI* aipbot = CAST_AI(hyjalAI, unit->AI());
+        if (!aipbot)return;
         for (uint8 i = 0; i < 7; ++i)
         {
-            if (GameObject* gem = instance->instance->GetGameObject(ai->VeinGUID[i]))
+            if (GameObject* gem = instance->instance->GetGameObject(aipbot->VeinGUID[i]))
                 gem->Delete();
         }
     }
@@ -690,12 +690,12 @@ void hyjalAI::DeSpawnVeins()
         Creature* unit = ObjectAccessor::GetCreature((*me), instance->GetGuidData(DATA_THRALL));
         if (!unit)
             return;
-        hyjalAI* ai = CAST_AI(hyjalAI, unit->AI());
-        if (!ai)
+        hyjalAI* aipbot = CAST_AI(hyjalAI, unit->AI());
+        if (!aipbot)
             return;
         for (uint8 i = 7; i < 14; ++i)
         {
-            if (GameObject* gem = instance->instance->GetGameObject(ai->VeinGUID[i]))
+            if (GameObject* gem = instance->instance->GetGameObject(aipbot->VeinGUID[i]))
                 gem->Delete();
         }
     }
@@ -943,9 +943,9 @@ void hyjalAI::WaypointReached(uint32 waypointId, uint32 /*pathId*/)
         {
             if (Creature* creature = ObjectAccessor::GetCreature(*me, DummyGuid))
             {
-                hyjalAI* ai = ENSURE_AI(hyjalAI, creature->AI());
-                ai->DoMassTeleport = true;
-                ai->MassTeleportTimer = 20000;
+                hyjalAI* aipbot = ENSURE_AI(hyjalAI, creature->AI());
+                aipbot->DoMassTeleport = true;
+                aipbot->MassTeleportTimer = 20000;
                 creature->CastSpell(me, SPELL_MASS_TELEPORT, false);
             }
         }

@@ -1,5 +1,6 @@
 #pragma once
 #include "Category.h"
+#include "Random.h"
 
 namespace ahbot
 {
@@ -23,7 +24,7 @@ namespace ahbot
     };
 
     template<class T>
-    void Shuffle(vector<T>& items) 
+    void Shuffle(vector<T>& items)
     {
         uint32 count = items.size();
         for (uint32 i = 0; i < count * 5; i++)
@@ -37,7 +38,7 @@ namespace ahbot
         }
     }
 
-    class ItemBag 
+    class ItemBag
     {
     public:
         ItemBag();

@@ -39,13 +39,13 @@ void LootTargetList::shrink(time_t fromTime)
     {
         if (i->asOfTime <= fromTime)
             erase(i++);
-		else
-			++i;
+        else
+            ++i;
     }
 }
 
 LootObject::LootObject(Player* bot, ObjectGuid guid)
-	: guid(), skillId(SKILL_NONE), reqSkillValue(0), reqItem(NULL)
+    : guid(), skillId(SKILL_NONE), reqSkillValue(0), reqItem(NULL)
 {
     Refresh(bot, guid);
 }

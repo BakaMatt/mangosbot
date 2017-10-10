@@ -4,11 +4,12 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotAI.h"
 #include "ChatHelper.h"
+#include "CharacterCache.h"
 
 PlayerbotSecurity::PlayerbotSecurity(Player* const bot) : bot(bot)
 {
     if (bot)
-        account = sObjectMgr->GetPlayerAccountIdByGUID(bot->GetGUID());
+        account = sCharacterCache->GetCharacterAccountIdByGuid(bot->GetGUID());
 }
 
 PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* reason, bool ignoreGroup)
@@ -161,7 +162,7 @@ bool PlayerbotSecurity::CheckLevelFor(PlayerbotSecurityLevel level, bool silent,
                 uint32 area = bot->GetAreaId();
                 if (area)
                 {
-					const AreaTableEntry* entry = sAreaTableStore.LookupEntry(area);
+                    const AreaTableEntry* entry = sAreaTableStore.LookupEntry(area);
                     if (entry)
                     {
                         out << " |cffffffff(|cffff0000" << entry->area_name[0] << "|cffffffff)";
@@ -182,6 +183,6 @@ bool PlayerbotSecurity::CheckLevelFor(PlayerbotSecurityLevel level, bool silent,
         break;
     }
 
-	bot->Whisper(out.str(), LANG_UNIVERSAL, from);
+    bot->Whisper(out.str(), LANG_UNIVERSAL, from);
     return false;
 }

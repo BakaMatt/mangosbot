@@ -26,6 +26,7 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 #include "WorldPacket.h"
+#include "GameTime.h"
 
 SpellHistory::Clock::duration const SpellHistory::InfinityCooldownDelay = std::chrono::duration_cast<SpellHistory::Clock::duration>(std::chrono::seconds(MONTH));
 SpellHistory::Clock::duration const SpellHistory::InfinityCooldownDelayCheck = std::chrono::duration_cast<SpellHistory::Clock::duration>(std::chrono::seconds(MONTH / 2));

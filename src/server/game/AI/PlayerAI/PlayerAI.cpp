@@ -771,7 +771,7 @@ Unit* PlayerAI::SelectAttackTarget() const
 
 struct ValidTargetSelectPredicate
 {
-    ValidTargetSelectPredicate(UnitAI const* ai) : _ai(ai) { }
+    ValidTargetSelectPredicate(UnitAI const* aipbot) : _ai(aipbot) { }
     UnitAI const* const _ai;
     bool operator()(Unit const* target) const
     {

@@ -5,10 +5,27 @@
 [AhbotConf]
 ConfVersion=2010102201
 
-###################################################################################################################
+###################################################################################################
+#
+# Prepatch Configuration
+#
+#
+# If you add GuildLevelSystem or Individual XP Rate patches, you must
+# set this to 1.
+#
+# PrepatchGI Added
+#         default = 0 (GuildLevelSystem and Individual XP Rate not added)
+#                 = 1 (GuildLevelSystem and/or Individual XP Rate added)
+
+PrepatchGI.Added = 0
+
+#
+###################################################################################################
+
+###################################################################################################
 # AUCTION HOUSE BOT SETTINGS
 #
-###################################################################################################################
+###################################################################################################
 
 # Disable original AuctionHouseBot
 AuctionHouseBot.Seller.Enabled = 0

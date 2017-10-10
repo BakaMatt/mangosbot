@@ -10,7 +10,8 @@ enum RandomItemType
 {
     RANDOM_ITEM_GUILD_TASK,
     RANDOM_ITEM_GUILD_TASK_REWARD_EQUIP,
-    RANDOM_ITEM_GUILD_TASK_REWARD_TRADE
+    RANDOM_ITEM_GUILD_TASK_REWARD_TRADE,
+    RANDOM_ITEM_GUILD_TASK_REWARD
 };
 
 class RandomItemPredicate
@@ -33,7 +34,7 @@ class RandomItemMgr
             return instance;
         }
 
-	public:
+    public:
         static bool HandleConsoleCommand(ChatHandler* handler, char const* args);
         RandomItemList Query(RandomItemType type, RandomItemPredicate* predicate);
         uint32 GetRandomItem(RandomItemType type, RandomItemPredicate* predicate = NULL);

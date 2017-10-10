@@ -2,14 +2,15 @@
 #include "Category.h"
 #include "ItemBag.h"
 #include "AhBot.h"
-#include "../World/World.h"
-#include "../Chat.h"
+#include "World.h"
+#include "Chat.h"
 #include "AhBotConfig.h"
-#include "../AuctionHouse/AuctionHouseMgr.h"
-#include "../WorldSession.h"
-#include "../../game/Entities/Player/Player.h"
+#include "AuctionHouseMgr.h"
+#include "WorldSession.h"
+#include "Player.h"
 #include "../playerbot/PlayerbotAIConfig.h"
 #include "../playerbot/playerbot.h"
+#include "GameTime.h"
 
 using namespace ahbot;
 
@@ -496,7 +497,7 @@ int AhBot::AddAuction(int auction, Category* category, ItemTemplate const* proto
     }
 
 
-    Player* player = sObjectMgr->GetPlayerByLowGUID(owner);
+    Player* player = ObjectAccessor::FindPlayerByLowGUID(owner);
     if (!player)
         return 0;
 
@@ -521,7 +522,7 @@ int AhBot::AddAuction(int auction, Category* category, ItemTemplate const* proto
     if (!item)
         return 0;
 
-    uint32 randomPropertyId = Item::GenerateItemRandomPropertyId(proto->ItemId);
+    uint32 randomPropertyId = GenerateItemRandomPropertyId(proto->ItemId);
     if (randomPropertyId)
         item->SetItemRandomProperties(randomPropertyId);
 
@@ -656,7 +657,7 @@ void AhBot::Expire(int auction)
     {
         if (IsBotAuction(itr->second->owner))
         {
-            itr->second->expire_time = sWorld->GetGameTime();
+            itr->second->expire_time = GameTime::GetGameTime();
             count++;
         }
 
@@ -862,7 +863,7 @@ uint32 AhBot::GetRandomBidder(uint32 auctionHouse)
     for (vector<uint32>::iterator i = guids.begin(); i != guids.end(); ++i)
     {
         uint32 guid = *i;
-        Player* player = sObjectMgr->GetPlayerByLowGUID(guid);
+        Player* player = ObjectAccessor::FindPlayerByLowGUID(guid);
         if (!player)
             continue;
 

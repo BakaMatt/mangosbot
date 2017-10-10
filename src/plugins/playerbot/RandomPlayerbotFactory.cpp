@@ -2,11 +2,12 @@
 #include "playerbot.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
-#include "../../server/database/Database/DatabaseEnv.h"
+#include "DatabaseEnv.h"
 #include "PlayerbotAI.h"
-#include "../../server/game/Entities/Player/Player.h"
-#include "../../server/game/Guilds/Guild.h"
-#include "../../server/game/Guilds/GuildMgr.h"
+#include "Player.h"
+#include "Guild.h"
+#include "GuildMgr.h"
+#include "WorldSession.h"
 #include "RandomPlayerbotFactory.h"
 
 map<uint8, vector<uint8> > RandomPlayerbotFactory::availableRaces;
@@ -181,7 +182,7 @@ string RandomPlayerbotFactory::CreateRandomBotName()
         return "";
     }
 
-	fields = result->Fetch();
+    fields = result->Fetch();
     return fields[0].GetString();
 }
 
@@ -313,7 +314,7 @@ void RandomPlayerbotFactory::CreateRandomGuilds()
         }
         else
         {
-            Player* player = sObjectMgr->GetPlayerByLowGUID(leader);
+            Player* player = ObjectAccessor::FindPlayer(leader);
             if (player)
                 availableLeaders.push_back(leader);
         }
@@ -333,7 +334,7 @@ void RandomPlayerbotFactory::CreateRandomGuilds()
 
         int index = urand(0, availableLeaders.size() - 1);
         ObjectGuid leader = availableLeaders[index];
-        Player* player = sObjectMgr->GetPlayerByLowGUID(leader);
+        Player* player = ObjectAccessor::FindPlayer(leader);
         if (!player)
         {
             sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Cannot find player for leader %u", leader);

@@ -28,9 +28,9 @@
 #define ENSURE_AI(a,b)  (EnsureAI<a>(b))
 
 template<class T, class U>
-T* EnsureAI(U* ai)
+T* EnsureAI(U* aipbot)
 {
-    T* cast_ai = dynamic_cast<T*>(ai);
+    T* cast_ai = dynamic_cast<T*>(aipbot);
     ASSERT(cast_ai);
     return cast_ai;
 };

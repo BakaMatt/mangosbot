@@ -46,6 +46,7 @@ target_link_libraries(game-interface
     Detour)
 
 add_library(game
+  ${PRIVATE_PCH_SOURCE}   
   ${PRIVATE_SOURCES})
 
 target_include_directories(game

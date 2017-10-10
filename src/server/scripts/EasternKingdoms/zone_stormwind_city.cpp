@@ -338,12 +338,12 @@ public:
                 Unit* summoner = me->ToTempSummon()->GetSummoner();
                 if (summoner && summoner->GetTypeId() == TYPEID_UNIT && summoner->IsAIEnabled)
                 {
-                    npc_lord_gregor_lescovar::npc_lord_gregor_lescovarAI* ai =
+                    npc_lord_gregor_lescovar::npc_lord_gregor_lescovarAI* aipbot =
                         CAST_AI(npc_lord_gregor_lescovar::npc_lord_gregor_lescovarAI, summoner->GetAI());
-                    if (ai)
+                    if (aipbot)
                     {
-                        ai->uiTimer = 2000;
-                        ai->uiPhase = 5;
+                        aipbot->uiTimer = 2000;
+                        aipbot->uiPhase = 5;
                     }
                     //me->ChangeOrient(0.0f, summoner);
                 }
