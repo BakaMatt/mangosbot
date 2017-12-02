@@ -2286,12 +2286,11 @@ void World::Update(uint32 diff)
     }
 
     /// <li> Handle AHBot operations
-    // if (m_timers[WUPDATE_AHBOT].Passed())
-    //{
-    //    sAuctionBot->Update();
-    //    m_timers[WUPDATE_AHBOT].Reset();
-    //}
-    // end of playerbot mod
+    if (m_timers[WUPDATE_AHBOT].Passed())
+    {
+        sAuctionBot->Update();
+        m_timers[WUPDATE_AHBOT].Reset();
+    }
 
     /// <li> Handle file changes
     if (m_timers[WUPDATE_CHECK_FILECHANGES].Passed())
