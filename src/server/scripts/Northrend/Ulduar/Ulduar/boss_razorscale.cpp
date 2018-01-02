@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -354,9 +354,9 @@ struct boss_razorscale : public BossAI
         }
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
-        _EnterCombat();
+        _JustEngagedWith();
         instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
         ScheduleAirPhaseEvents();
         summons.DoAction(ACTION_START_FIGHT, DummyEntryCheckPredicate());
@@ -642,7 +642,9 @@ struct boss_razorscale : public BossAI
                     DoCastSelf(SPELL_FIREBOLT);
                     break;
                 case EVENT_FUSE_ARMOR:
-                    DoCastVictim(SPELL_FUSE_ARMOR);
+                    if (Unit* victim = me->GetVictim())
+                        if (!victim->HasAura(SPELL_FUSED_ARMOR))
+                            DoCast(victim, SPELL_FUSE_ARMOR);
                     events.Repeat(Seconds(10), Seconds(15));
                     break;
                 case EVENT_RESUME_MOVE_CHASE:
@@ -1263,7 +1265,7 @@ struct npc_darkrune_watcher : public ScriptedAI
             razorscale->AI()->JustSummoned(me);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         _events.ScheduleEvent(EVENT_LIGHTNING_BOLT, Seconds(5));
         _events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, Seconds(34));
@@ -1324,7 +1326,7 @@ struct npc_darkrune_guardian : public ScriptedAI
             razorscale->AI()->JustSummoned(me);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         _events.ScheduleEvent(EVENT_STORMSTRIKE, Seconds(23));
     }
@@ -1392,7 +1394,7 @@ struct npc_darkrune_sentinel : public ScriptedAI
             razorscale->AI()->JustSummoned(me);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         _events.ScheduleEvent(EVENT_HEROIC_STRIKE, Seconds(9));
         _events.ScheduleEvent(EVENT_BATTLE_SHOUT, Seconds(15));
@@ -1660,7 +1662,7 @@ class spell_razorscale_summon_iron_dwarves : public SpellScript
     }
 };
 
-// 64771 - Fuse Armor
+// 64821 - Fuse Armor
 class spell_razorscale_fuse_armor : public AuraScript
 {
     PrepareAuraScript(spell_razorscale_fuse_armor);
@@ -1670,15 +1672,18 @@ class spell_razorscale_fuse_armor : public AuraScript
         return ValidateSpellInfo({ SPELL_FUSED_ARMOR });
     }
 
-    void HandleFused(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    void HandleFused(AuraEffect const* /*aurEff*/)
     {
-        if (GetStackAmount() == 5)
-            GetTarget()->CastSpell(GetTarget(), SPELL_FUSED_ARMOR, true);
+        if (GetStackAmount() != GetSpellInfo()->StackAmount)
+            return;
+
+        GetTarget()->CastSpell(nullptr, SPELL_FUSED_ARMOR, true);
+        Remove();
     }
 
     void Register() override
     {
-        AfterEffectApply += AuraEffectRemoveFn(spell_razorscale_fuse_armor::HandleFused, EFFECT_1, SPELL_AURA_MOD_MELEE_HASTE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_razorscale_fuse_armor::HandleFused, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
     }
 };
 

@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,4 +15,25 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptPCH.h"
+#ifndef SelectableAI_h__
+#define SelectableAI_h__
+
+#include "FactoryHolder.h"
+
+class DBPermit
+{
+    public:
+        virtual ~DBPermit() { }
+        virtual bool IsScriptNameAllowedInDB() const = 0;
+};
+
+template <class O, class AI, bool is_db_allowed = true>
+struct SelectableAI : public FactoryHolder<AI, O>, public Permissible<O>, public DBPermit
+{
+    SelectableAI(std::string const& name) : FactoryHolder<AI, O>(name), Permissible<O>(), DBPermit() { }
+
+    bool IsScriptNameAllowedInDB() const final override { return is_db_allowed; }
+};
+
+
+#endif // SelectableAI_h__
